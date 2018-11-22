@@ -159,19 +159,20 @@ model = Sequential()
 model.add(Dense(20, activation='relu', input_dim=5184))
 model.add(Dense(3, activation='softmax'))
 sgd = optimizers.SGD(lr=0.01, decay=1e-6, momentum=0.9, nesterov=True)
-model.compile(loss='categorical_crossentropy', optimizer=sgd) 
+model.compile(loss='categorical_crossentropy', 
+              optimizer=sgd,metrics=['accuracy']) 
 
 #training the model  
 
-model.fit(X_train, Y_train, epochs=10, batch_size=64)
+model.fit(X_train, Y_train, epochs=10, batch_size=32)
 
 
-[X_test2, Y_test2] = generate_test_set_classification() 
-Y_pred = model.predict(X_test2,batch_size=32, verbose=0)
+#[X_test2, Y_test2] = generate_test_set_classification() 
+#Y_pred = model.predict(X_test2,batch_size=32, verbose=0)
 
 X_test = generate_a_disk() 
 X_test = X_test.reshape(1, X_test.shape[0])
-model.predict(X_test,batch_size=64, verbose=0)
+model.predict(X_test,batch_size=32, verbose=0)
 
 
 #Adam
@@ -187,8 +188,8 @@ model.compile(loss='categorical_crossentropy',
 model.fit(X_train, Y_train, epochs=10, batch_size=32)
 
 
-[X_test2, Y_test2] = generate_test_set_classification() 
-Y_pred_A = model.predict(X_test2,batch_size=32, verbose=0)
+#[X_test2, Y_test2] = generate_test_set_classification() 
+#Y_pred_A = model.predict(X_test2,batch_size=32, verbose=0)
 
 X_test = generate_a_disk()  # classe 1
 X_test = generate_a_rectangle() # classe 0
@@ -262,7 +263,8 @@ sgd = optimizers.SGD(lr=0.01, decay=1e-6, momentum=0.9, nesterov=True)
 model.compile(loss='mean_squared_error', optimizer=sgd,metrics=['accuracy']) 
     #training the model  
 
-model.fit(X_train, Y_train, epochs=30, batch_size=168)
+
+model.fit(X_train, Y_train, epochs=10, batch_size=32)
 
 #testing the model
 
