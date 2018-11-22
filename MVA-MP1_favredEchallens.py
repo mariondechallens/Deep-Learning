@@ -1,6 +1,7 @@
 import matplotlib.pyplot as plt
 #%matplotlib inline
 import numpy as np
+import math
 
 # On some implementations of matplotlib, you may need to change this value
 IMAGE_SIZE = 72
@@ -141,4 +142,129 @@ def generate_test_set_regression():
     [X_test, Y_test] = generate_dataset_regression(300, 20)
     return [X_test, Y_test]
 
+######### 3) Simple Classification  0:rectangle, 1:disque, 2:triangle
+    
+from keras.utils import np_utils
+from keras import optimizers
+from keras.models import Sequential 
+from keras.layers import Dense, Activation
 
+[X_train, Y_train] = generate_dataset_classification(300, 20) 
+# Convert labels to categorical one-hot encoding
+Y_train = np_utils.to_categorical(Y_train, num_classes=3) 
+
+#Stochastic Gradient Descent 
+# For a three-class classification problem
+model = Sequential()
+model.add(Dense(20, activation='relu', input_dim=5184))
+model.add(Dense(3, activation='softmax'))
+sgd = optimizers.SGD(lr=0.01, decay=1e-6, momentum=0.9, nesterov=True)
+model.compile(loss='categorical_crossentropy', optimizer=sgd) 
+
+#training the model  
+
+model.fit(X_train, Y_train, epochs=10, batch_size=64)
+
+
+[X_test2, Y_test2] = generate_test_set_classification() 
+Y_pred = model.predict(X_test2,batch_size=32, verbose=0)
+
+X_test = generate_a_disk() 
+X_test = X_test.reshape(1, X_test.shape[0])
+model.predict(X_test,batch_size=64, verbose=0)
+
+
+#Adam
+# For a three-class classification problem
+model = Sequential()
+model.add(Dense(20, activation='relu', input_dim=5184))
+model.add(Dense(3, activation='softmax'))
+model.compile(loss='categorical_crossentropy', 
+              optimizer='adam',metrics=['accuracy']) 
+    #training the model
+#training the model  
+
+model.fit(X_train, Y_train, epochs=10, batch_size=32)
+
+
+[X_test2, Y_test2] = generate_test_set_classification() 
+Y_pred_A = model.predict(X_test2,batch_size=32, verbose=0)
+
+X_test = generate_a_disk()  # classe 1
+X_test = generate_a_rectangle() # classe 0
+X_test = X_test.reshape(1, X_test.shape[0])
+model.predict(X_test,batch_size=32, verbose=0)
+
+
+###########4) Visualization
+W = model.layers[0].get_weights()
+plt.imshow(W[0][:,0].reshape(72,72), cmap='gray')
+plt.imshow(W[0][:,1].reshape(72,72), cmap='gray')
+plt.imshow(W[0][:,2].reshape(72,72), cmap='gray')
+
+
+#######5) More difficult Classification problem 
+
+[X_train, Y_train] = generate_dataset_classification(300, 20, True)
+Y_train = np_utils.to_categorical(Y_train, num_classes=3)
+[X_test, Y_test] = generate_test_set_classification()
+
+model.evaluate(X_test, Y_test)
+
+## modeles precedents moins bons
+
+X_train=X_train.reshape([-1,300, 5184])
+Y_train=Y_train.reshape([-1,300, 3])
+##Convolution1D
+from keras.layers import Conv1D, MaxPooling1D
+model = Sequential() 
+model.add(Conv1D(16, 5, activation='relu',input_shape=(300,5184))) 
+print(model.output_shape)
+
+model.add(MaxPooling1D(5))
+print(model.output_shape)
+
+#model.add(Dense(3, activation='relu')) 
+
+model.compile(loss='categorical_crossentropy', optimizer=sgd,metrics=['accuracy'])
+
+model.fit(X_train, Y_train, epochs=20, batch_size=32)
+
+#testing the model
+
+Y_pred = model.predict(X_test,batch_size=32, verbose=0)
+
+#####6) A regression problem with SGD
+
+[X_train, Y_train] = generate_dataset_regression(300, 20)
+visualize_prediction(X_train[0], Y_train[0])
+
+#need to normalize (normer) the vertices Y
+
+def normer(Y):
+    for i in range(len(Y)):
+        a = math.sqrt(Y[i,0]**2 + Y[i,1]**2)
+        b = math.sqrt(Y[i,2]**2 + Y[i,3]**2)
+        c = math.sqrt(Y[i,4]**2 + Y[i,5]**2)
+        Y[i,:]=[Y[i,0]/a,Y[i,1]/a,Y[i,2]/b,Y[i,3]/b,Y[i,4]/c,Y[i,5]/c]
+    return Y
+
+Y_train = normer(Y_train)        
+
+
+[X_test, Y_test] = generate_test_set_regression()
+Y_test = normer(Y_test)
+
+model = Sequential()
+model.add(Dense(20, activation='relu', input_dim=5184))
+model.add(Dense(6, activation='softmax'))
+sgd = optimizers.SGD(lr=0.01, decay=1e-6, momentum=0.9, nesterov=True)
+model.compile(loss='mean_squared_error', optimizer=sgd,metrics=['accuracy']) 
+    #training the model  
+
+model.fit(X_train, Y_train, epochs=30, batch_size=168)
+
+#testing the model
+
+Y_pred = model.predict(X_test,batch_size=32, verbose=0)
+Y_pred = normer(Y_pred)
