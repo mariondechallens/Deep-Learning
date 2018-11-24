@@ -231,6 +231,7 @@ model.compile(loss='categorical_crossentropy', optimizer=sgd,metrics=['accuracy'
 
 model.fit(X_train, Y_train, epochs=20, batch_size=32)
 
+
 #testing the model
 
 Y_pred = model.predict(X_test,batch_size=32, verbose=0)
